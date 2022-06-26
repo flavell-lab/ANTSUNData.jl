@@ -1,5 +1,5 @@
 zstd = FlavellBase.standardize
-function import_data(path_h5, std_method=:global)
+function import_data(path_h5; std_method=:global, custom_keys::Union{Nothing,Vector{String}}=nothing)
     
     if !(std_method in [:local, :global])
         error("$std_method is not valid. options: `:local`, `:global`")
@@ -67,5 +67,12 @@ function import_data(path_h5, std_method=:global)
         end
     end
     
+    # custom data
+    if !isnothing(custom_keys)
+        for k = custom_keys
+            dict_[k] = read(h5f, k)
+        end
+    end
+
     dict_
 end
