@@ -1,5 +1,5 @@
 module ANTSUNData
-using FlavellConstants, FlavellBase
+using FlavellConstants, FlavellBase, HDF5
 
 include("data_h5.jl")
 # data_h5.jl

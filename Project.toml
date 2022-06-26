@@ -6,3 +6,4 @@ version = "0.1.0"
 [deps]
 FlavellBase = "88015601-1e04-46e4-b006-ffd03bd63f42"
 FlavellConstants = "dcb47d69-08dc-4104-8beb-08f30fc48864"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
