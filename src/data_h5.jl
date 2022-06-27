@@ -52,7 +52,7 @@ function import_data(path_h5; std_method=:global, custom_keys::Union{Nothing,Vec
                 dict_["s_"*var] = std(dict_[var])
                 dict_["u_"*var] = mean(dict_[var])
             elseif std_method == :global
-                for (var, σ) = [("velocity", σ_vel), ("pumping", σ_pumping), ("θh", σ_θh)]
+                for (var, σ) = [("velocity", v_STD), ("pumping", P_STD), ("θh", θh_STD)]
                     dict_[var*"_s"] = dict_[var] / σ
                     dict_["s_"*var] = σ
                 end
