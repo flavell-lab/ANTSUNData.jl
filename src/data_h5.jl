@@ -59,20 +59,20 @@ function import_data(path_h5; std_method=:global, custom_keys::Union{Nothing,Vec
             end
         end
         
-        # tiiming
+        # timing
         dict_["timestamp_nir"] = read(h5f, "timing/timestamp_nir")
         dict_["timestamp_confocal"] = read(h5f, "timing/timestamp_confocal")
         if haskey(h5f["timing"], "stim_begin_confocal")
             dict_["stim_begin_confocal"] = read(h5f, "timing/stim_begin_confocal")
         end
-    end
-    
-    # custom data
-    if !isnothing(custom_keys)
-        for k = custom_keys
-            dict_[k] = read(h5f, k)
+        
+        # custom data
+        if !isnothing(custom_keys)
+            for k = custom_keys
+                dict_[k] = read(h5f, k)
+            end
         end
     end
-
+    
     dict_
 end
