@@ -1,5 +1,6 @@
 zstd = FlavellBase.standardize
-function import_data(path_h5; std_method=:global, custom_keys::Union{Nothing,Vector{String}}=nothing)
+function import_data(path_h5; import_pumping::Bool=true, std_method=:global,
+        custom_keys::Union{Nothing,Vector{String}}=nothing)
     
     if !(std_method in [:local, :global])
         error("$std_method is not valid. options: `:local`, `:global`")
@@ -14,7 +15,7 @@ function import_data(path_h5; std_method=:global, custom_keys::Union{Nothing,Vec
         reversal_events = read(h5f, "behavior/reversal_events")
         head_angle = read(h5f, "behavior/head_angle")
         angular_velocity = read(h5f, "behavior/angular_velocity")
-        pumping = read(h5f, "behavior/pumping")
+        pumping = import_pumping ? read(h5f, "behavior/pumping") : fill(NaN, length(velocity))
         worm_curvature = read(h5f, "behavior/worm_curvature")
         body_angle_absolute = read(h5f, "behavior/body_angle_absolute")
         body_angle_all = read(h5f, "behavior/body_angle_all")
