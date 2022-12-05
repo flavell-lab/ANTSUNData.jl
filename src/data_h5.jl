@@ -118,11 +118,15 @@ Arguments
 
 ## Example  
 ### Basic (single, continuous recording)  
+```julia
 export_nd2_h5(path_data_dict; path_h5=path_h5)  
+```
 
 ### Split (split, 2 recordings)  
+```julia
 export_nd2_h5(path_data_dict; path_h5=path_h5,
     jld2_dict_key="combined_data_dict", n_recording=2)  
+```
 """
 function export_jld2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=nothing,
         path_data_dict_match::Union{String,Nothing}=nothing, n_recording::Int=1,
