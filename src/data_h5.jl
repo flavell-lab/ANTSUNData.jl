@@ -1,4 +1,22 @@
 zstd = FlavellBase.standardize
+
+"""
+    import_data(path_h5; import_pumping::Bool=true, std_method=:global,
+        custom_keys::Union{Nothing,Vector{String}}=nothing)
+
+Imports ANTSUN HDF5 data file
+
+Arguments
+---------
+* `path_h5`: path of the data HDF5 file to import
+* `import_pumping`: whether or not to import pumping data
+* `std_method`: `:global` or `:local` (see notes below)
+* `custom_keys`: list of other HDF5 key/dataset to import in the file
+
+## Note on `std_method`:  
+`:global`: behaviors are standardized by the constants in FlavellConstants.jl  
+`:local`: behaviorals are standardized by the variances in this dataset  
+"""
 function import_data(path_h5; import_pumping::Bool=true, std_method=:global,
         custom_keys::Union{Nothing,Vector{String}}=nothing)
     
@@ -78,18 +96,51 @@ function import_data(path_h5; import_pumping::Bool=true, std_method=:global,
     dict_
 end
 
-function export_nd2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=nothing,
+
+"""
+    export_jld2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=nothing,
         path_data_dict_match::Union{String,Nothing}=nothing, n_recording::Int=1,
-        jld2_dict_key::String="dict_key", velocity_filter_threshold=0.2)
-    data_dict = import_jld2_data(path_data_dict, jld2_dict_k);
+        jld2_dict_key::String="data_dict", velocity_filter=true,
+        velocity_filter_threshold=0.2, verbose=false)
 
-    idx_splits = [1:data_dict["max_t"]]
+Loads JLD2 data and write it to HDF5 file
 
+Arguments
+---------
+* `path_data_dict`: JLD2 file path to load
+* `path_h5`: output file (HDF5) path
+* `path_data_dict_match`: data_dict_match for NeuroPAL
+* `n_recording`: number of recordings/segments in the file
+* `jld2_dict_key`: key of the data in the JLD2 file
+* `velocity_filter`: filtering velocity or not
+* `velocity_filter_threshold`: velocity filter threshold
+* `verbose`: if true, prints progress
+
+## Example  
+### Basic (single, continuous recording)  
+export_nd2_h5(path_data_dict; path_h5=path_h5)  
+
+### Split (split, 2 recordings)  
+export_nd2_h5(path_data_dict; path_h5=path_h5,
+    jld2_dict_key="combined_data_dict", n_recording=2)  
+"""
+function export_jld2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=nothing,
+        path_data_dict_match::Union{String,Nothing}=nothing, n_recording::Int=1,
+        jld2_dict_key::String="data_dict", velocity_filter=true,
+        velocity_filter_threshold=0.2, verbose=false)
+    verbose && println("processing: $path_data_dict")
+    data_dict = import_jld2_data(path_data_dict, jld2_dict_key);
+    idx_splits = get_idx_splits(data_dict, n_recording)
+
+    verbose && println("idx_splits: $idx_splits")
+    
     # traces
     trace_F20 = trace_array_rm_nan_neuron(data_dict["traces_array_F_F20"])[1]
     trace_zstd = trace_array_rm_nan_neuron(data_dict["raw_zscored_traces_array"])[1]
     trace, match_org_to_skip, match_skip_to_org = trace_array_rm_nan_neuron(data_dict["traces_array"])
     n_neuron, n_t = size(trace)
+    
+    verbose && println("timepoints: $n_t n(neuron): $n_neuron")
     
     # velocity
     velocity = impute_list(data_dict["velocity_stage"])
@@ -109,12 +160,14 @@ function export_nd2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=no
 
     # NeuroPAL
     neuropal_q = false
-    if isfile(path_data_dict_match)
+    if !isnothing(path_data_dict_match) && isfile(path_data_dict_match)
+        verbose && println("processing NeuroPAL")
         data_dict_match = import_jld2_data(path_data_dict_neuropal, "data_dict")
         neuropal_q = true
     end
         
     # export hdf5
+    verbose && println("writing to HDF5")
     h5open(path_h5, "w") do h5f
         # traces
         g1 = create_group(h5f, "gcamp")
@@ -142,13 +195,12 @@ function export_nd2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=no
 
         # behavior
         g2 = create_group(h5f, "behavior")
-        g2["velocity"] = velocity_filt
+        g2["velocity"] = velocity_filter ? velocity_filt : velocity
         g2["reversal_vec"] = reversal_vec
         g2["reversal_events"] = reversal_events
 
         list_key = ["head_angle", "angular_velocity", "pumping", "worm_curvature",
             "body_angle_absolute", "body_angle_all", "body_angle"]
-
         for k = list_key
             try
                 d = data_dict[k]
@@ -162,6 +214,8 @@ function export_nd2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=no
         g3 = create_group(h5f, "timing")
         g3["timestamp_nir"] = data_dict["nir_timestamps"]
         g3["timestamp_confocal"] = data_dict["timestamps"]
+        
+        # heat stim data
         if haskey(data_dict, "stim_begin_confocal")
             if length(data_dict["stim_begin_confocal"]) >= 1
                 d = data_dict["stim_begin_confocal"]
@@ -176,6 +230,8 @@ function export_nd2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=no
             g4["roi_match"] = data_dict_match["roi_matches"]
         end
     end
+    
+    verbose && println("writing to HDF5 complete")
     
     nothing
 end
