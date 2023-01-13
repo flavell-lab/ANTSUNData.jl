@@ -166,7 +166,7 @@ function export_jld2_h5(path_data_dict::String; path_h5::Union{String,Nothing}=n
     neuropal_q = false
     if !isnothing(path_data_dict_match) && isfile(path_data_dict_match)
         verbose && println("processing NeuroPAL")
-        data_dict_match = import_jld2_data(path_data_dict_neuropal, "data_dict")
+        data_dict_match = import_jld2_data(path_data_dict_match, "data_dict")
         neuropal_q = true
     end
         
