@@ -34,18 +34,41 @@ function filter_velocity(velocity::Vector{T}, derivative_threshold=0.2) where T
     v_filt = Vector{Union{Missing,Float64}}(undef, length(velocity))
     v_filt .= velocity
     
+    n_t = length(velocity)
+    
     list_idx_rm = []
     for i = findall(abs.(diff(velocity)) .> derivative_threshold)
-        push!(list_idx_rm, i:i+4)
+        push!(list_idx_rm, i:min(i+4, n_t))
     end
     list_idx_rm = union(vcat(list_idx_rm...))
     
     v_filt[list_idx_rm] .= missing
     
     v_filt = Impute.impute(v_filt, Impute.Interpolate())
+
+    n_missing_seg = 0
+    t_last = -1
+    for i = n_t:-1:1
+        if ismissing(v_filt[i])
+            n_missing_seg += 1
+            v_filt[i] = 0.
+            t_last = i
+        else
+            break
+        end
+    end
+    
+    if t_last > 0
+        v_filt[t_last:end] .= mean(v_filt[t_last-6:t_last-1])
+    end
+    
+    if n_missing_seg > 3
+        @warn("the last segment (n=$n_missing_seg) had a velocity spike that could not be imputed after filtering. Setting to mean from $(t_last-6:t_last)")
+    end
     
     convert(Vector{T}, v_filt)
 end
+
 
 function concrete_type(array::Array{Any})
     list_type = union(typeof.(array))
