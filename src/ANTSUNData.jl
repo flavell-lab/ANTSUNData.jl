@@ -1,6 +1,5 @@
 module ANTSUNData
-    using FlavellConstants, FlavellBase, HDF5,
-        StatsBase, ProgressMeter, Statistics
+    using FlavellConstants, FlavellBase, HDF5
 
     include("data_h5.jl")
 
