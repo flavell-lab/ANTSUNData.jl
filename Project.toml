@@ -1,7 +1,7 @@
 name = "ANTSUNData"
 uuid = "cee8c2ed-1f8c-46f5-bbc8-43813539d123"
 authors = ["Jungsoo Kim <jungsu93@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 FlavellBase = "88015601-1e04-46e4-b006-ffd03bd63f42"
