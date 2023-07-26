@@ -1,7 +1,7 @@
 name = "ANTSUNData"
 uuid = "cee8c2ed-1f8c-46f5-bbc8-43813539d123"
 authors = ["Jungsoo Kim <jskneuro@gmail.com>"]
-version = "0.3.0"
+version = "0.3.1"
 
 
 [deps]
