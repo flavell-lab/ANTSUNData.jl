@@ -41,6 +41,7 @@ function import_data(path_h5; import_pumping::Bool=true, std_method=:global,
 
         # trace
         trace_F20 = read(h5f, "gcamp/traces_array_F_F20")
+        trace_Fmean = read(h5f, "gcamp/traces_array_F_Fmean")
         trace_original = read(h5f, "gcamp/trace_array_original")
         trace = read(h5f, "gcamp/trace_array")
         list_splits = read(h5f, "gcamp/idx_splits")
@@ -50,6 +51,7 @@ function import_data(path_h5; import_pumping::Bool=true, std_method=:global,
         dict_["idx_splits"] = [list_splits[i,1]:list_splits[i,2] for i = 1:size(list_splits,1)]
         dict_["trace_original"] = trace_original
         dict_["trace_array_F20"] = trace_F20
+        dict_["trace_array_Fmean"] = trace_Fmean
         dict_["trace_array"] = trace
         dict_["n_neuron"] = size(trace, 1)
         dict_["n_t"] = size(trace, 2)
